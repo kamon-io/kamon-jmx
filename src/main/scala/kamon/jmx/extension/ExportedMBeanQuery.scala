@@ -225,9 +225,8 @@ class ExportedMBeanQuery(
   system.scheduler.schedule(
     FiniteDuration(identifyDelayInterval, TimeUnit.MILLISECONDS),
     FiniteDuration(identifyInterval, TimeUnit.MILLISECONDS),
-    new Runnable() {
-      def run(): Unit = rebuildRecorders()
-    })
+    () => rebuildRecorders()
+  )
 }
 
 /**

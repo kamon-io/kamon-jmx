@@ -19,17 +19,13 @@ package kamon.jmx.extension
 import java.util.concurrent.TimeUnit
 
 import scala.concurrent.duration.FiniteDuration
-
 import com.typesafe.config.Config
-
-import kamon.metric.{
-  GenericEntityRecorder,
-  MetricsModule,
-  EntityRecorderFactory
-}
+import kamon.metric.{EntityRecorderFactory, GenericEntityRecorder, MetricsModule}
 import kamon.metric.instrument._
 import kamon.metric.instrument.Histogram.DynamicRange
 import kamon.metric.instrument.Gauge.CurrentValueCollector
+
+import scala.runtime.BoxesRunTime
 
 case object MetricDefinition {
 
@@ -81,11 +77,10 @@ case object MetricDefinition {
     }
 
   // gets a duration from a config
-  def getFiniteDuration(
-    metricConfig: Map[String, Any]): Option[FiniteDuration] =
+  def getFiniteDuration(metricConfig: Map[String, Any]): Option[FiniteDuration] =
 
     if (metricConfig.contains("interval")) {
-      val millis: Long = metricConfig("interval").asInstanceOf[Long]
+      val millis: Long = BoxesRunTime.toLong(metricConfig("interval"))
       Some(new FiniteDuration(millis, TimeUnit.MILLISECONDS))
     } else {
       None
