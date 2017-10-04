@@ -35,9 +35,13 @@ class JMXExtension(system: ExtendedActorSystem) extends Kamon.Extension {
   val log = Logging(system, getClass)
   log.info("Starting the Kamon(JMX) extension")
 
-  val subscriber = system.actorOf(Props[JMXReporterSupervisor], "kamon-jmx-reporter")
-
   val jmxConfig = system.settings.config.getConfig("kamon.jmx")
+
+  val mBeanNameGeneratorFQCN = jmxConfig.getString("mbean-name-generator")
+  val mBeanNameGenerator = system.dynamicAccess.createInstanceFor[MBeanNameGenerator](mBeanNameGeneratorFQCN, Nil).get
+
+  val subscriber = system.actorOf(Props(new JMXReporterSupervisor(mBeanNameGenerator)), "kamon-jmx-reporter")
+
   val subscriptions = jmxConfig.getConfig("subscriptions")
 
   subscriptions.firstLevelKeys foreach { subscriptionCategory ⇒
@@ -68,8 +72,8 @@ private trait ActorJMXSupervisor extends Actor with ActorLogging {
     }
 }
 
-private class JMXReporterSupervisor extends Actor with ActorLogging with ActorJMXSupervisor {
-  private val jmxActor = context.actorOf(JMXReporterActor.props, "kamon-jmx-actor")
+private class JMXReporterSupervisor(mBeanNameGenerator: MBeanNameGenerator) extends Actor with ActorLogging with ActorJMXSupervisor {
+  private val jmxActor = context.actorOf(JMXReporterActor.props(mBeanNameGenerator), "kamon-jmx-actor")
 
   def receive = {
     case tick: TickMetricSnapshot ⇒ jmxActor ! tick
