@@ -173,7 +173,7 @@ private object JMXReporterActor {
   import MBeanManager._
   import MetricMBeans._
 
-  private[jmx] def props = Props(classOf[JMXReporterActor])
+  private[jmx] def props(mBeanNameGenerator: MBeanNameGenerator) = Props(new JMXReporterActor(mBeanNameGenerator))
 
   private def updateHystogramMetrics(group: String, name: String, hs: Histogram.Snapshot): Unit = {
     createOrUpdateMBean[HistogramMetric, Histogram.Snapshot](group, name, hs)
@@ -184,7 +184,7 @@ private object JMXReporterActor {
   }
 }
 
-private class JMXReporterActor extends Actor {
+private class JMXReporterActor(mBeanNameGenerator: MBeanNameGenerator) extends Actor {
 
   import JMXReporterActor._
   import MBeanManager.unregisterAllBeans
@@ -197,9 +197,9 @@ private class JMXReporterActor extends Actor {
       } {
         metricSnapshot match {
           case hs: Histogram.Snapshot ⇒
-            updateHystogramMetrics(entity.category, entity.name + "." + metricKey.name, hs)
+            updateHystogramMetrics(entity.category, mBeanNameGenerator.generateName(entity, metricKey), hs)
           case cs: Counter.Snapshot ⇒
-            updateCounterMetrics(entity.category, entity.name + "." + metricKey.name, cs)
+            updateCounterMetrics(entity.category, mBeanNameGenerator.generateName(entity, metricKey), cs)
         }
       }
   }

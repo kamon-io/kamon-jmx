@@ -100,6 +100,7 @@ kamon.jmx {
     http-server     = [ "**" ]
     kamon-mxbeans   = [ "**" ]
   }
+  mbean-name-generator = kamon.jmx.SimpleMBeanNameGenerator
 }
 ```
 
@@ -162,6 +163,7 @@ kamon {
       # Here is the addition of the JMX exporting functionality to the subscriptions
       kamon-mxbeans   = [ "**" ]
     }
+    mbean-name-generator = kamon.jmx.SimpleMBeanNameGenerator
   }
 
   # adding the JMX to Kamon module
